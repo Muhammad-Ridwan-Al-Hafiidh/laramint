@@ -25,4 +25,4 @@
 
 .process-step-active {
     background-color: #f89828;
-}
+}/* Ensure active ring color matches */.process-step-active { background-color: #f89828; border-color: #f89828; }

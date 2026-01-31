@@ -18,6 +18,7 @@ class QuestionComponents extends Component
     public array $answers;
     public  $correctAnswer = [];
     public ?Quiz $quiz = null;
+    public string $difficulty = 'medium';
 
 
     /**
@@ -60,7 +61,8 @@ class QuestionComponents extends Component
             'title' => $this->title,
             'question_body' => $this->question_body,
             'answer' => $this->makeAnswerJson(),
-            'question_type_id' => $this->questionTypeId
+            'question_type_id' => $this->questionTypeId,
+            'difficulty' => $this->difficulty,
         ]);
 
         if (isset($this->quiz->id)) {
@@ -107,6 +109,7 @@ class QuestionComponents extends Component
         $this->title = $this->question->title;
         $this->question_body = $this->question->question_body;
         $this->questionTypeId = $this->question->question_type_id;
+        $this->difficulty = $this->question->difficulty ?? 'medium';
         $this->fetchAnswerJson();
     }
 }

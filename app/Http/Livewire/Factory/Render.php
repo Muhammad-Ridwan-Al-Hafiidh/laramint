@@ -9,28 +9,39 @@ use App\Models\QuestionType;
 
 class Render extends Component
 {
-
-    public ?int $questionTypeId;
+    public ?int $questionTypeId = null;
     public string $component = '';
-    public ?Question $question;
+    public ?Question $question = null;
     public $quiz = null;
+    public string $difficulty = 'medium';
 
     public function mount(): void
     {
-        $this->questionTypeId = QuestionType::first()->id;
+        $firstType = QuestionType::first();
+        if ($firstType && empty($this->question)) {
+            $this->questionTypeId = $firstType->id;
+            $this->getComponent($this->questionTypeId);
+        }
 
         if (!empty($this->question)) {
             $this->questionTypeId = $this->question->question_type_id;
-
+            $this->difficulty = $this->question->difficulty ?? 'medium';
             $this->getComponent($this->questionTypeId);
         }
     }
 
-
     private function getComponent($questionTypeId): void
     {
+        if (!$questionTypeId) {
+            $this->component = '';
+            return;
+        }
         $questionType = QuestionType::find($questionTypeId);
-        $this->component = (string)QuestionFactory::build($questionType)->getCreateUpdateForm();
+        if (!$questionType) {
+            $this->component = '';
+            return;
+        }
+        $this->component = (string) QuestionFactory::Build($questionType)->getCreateUpdateForm();
     }
 
     public function selectQuestionType(): void
@@ -38,15 +49,9 @@ class Render extends Component
         $this->getComponent($this->questionTypeId);
     }
 
-
-    /**
-     * render
-     *
-     * @return \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory
-     */
     public function render()
     {
         $questionTypes = QuestionType::all();
-        return view('livewire.factory.render', compact("questionTypes"));
+        return view('livewire.factory.render', compact('questionTypes'));
     }
 }

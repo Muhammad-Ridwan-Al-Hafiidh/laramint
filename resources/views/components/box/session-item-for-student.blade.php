@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     <div class="row">
         <div class="col-12 mb-2">
             <div class="card border-left-secondary bg-light shadow">
@@ -29,7 +29,7 @@
                                     <h6 class="font-weight-bold text-dark">{{ __('Grade') }}</h6>
                                     <hr />
                                     <label>{{ __('Progress Bar:') }}</label>
-                                    <x-atoms.progress :color="'primary'" :fill="$session->workout_completed ?? 0" :count="$participant->Workout->count() ?? 0" />
+                                    <x-atoms.progress :color="'primary'" :fill="$session->workout_completed ?? 0" :count="$session->Related->count()" />
                                     <hr />
                                     <span>Average Star:</span>
                                     <x-atoms.stars :score="$session->workout_score ?? 0" />

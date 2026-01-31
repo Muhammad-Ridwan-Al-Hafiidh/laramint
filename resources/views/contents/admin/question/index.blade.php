@@ -19,15 +19,16 @@
             <!-- Card Body -->
             <div class="card-body">
                 <div class="text-center">
-    
-                    
+
+
                 <table class="table table-bordered">
                     <thead>
                         <tr>
                         <th scope="col">#</th>
                         <th scope="col">{{ __("Title") }}</th>
                         <th scope="col">{{ __("Type") }}</th>
-                        
+                        <th scope="col">{{ __("Difficulty") }}</th>
+
                         @if(Auth::user()->hasRole('Super-Admin') || Auth::user()->hasRole('Super-Admin') || Auth::user()->hasAnyPermission(['question.edit' , 'question.delete']))
                         <th scope="col">{{ __("Action") }}</th>
                         @endif
@@ -38,15 +39,19 @@
                             <tr>
                                 <th scope="row">{{ $loop->iteration }}</th>
                                 <td>
-                                    {{ $question->title }} 
+                                    {{ $question->title }}
                                 </td>
                                 <td>
-                                    {{ $question->QuestionType->title }} 
+                                    {{ $question->QuestionType->title }}
                                 </td>
-                            
 
-                                @if(Auth::user()->hasRole('Super-Admin') 
-                                || Auth::user()->hasRole('Super-Admin') 
+                                 <td>
+                                    {{ $question->difficulty }}
+                                </td>
+
+
+                                @if(Auth::user()->hasRole('Super-Admin')
+                                || Auth::user()->hasRole('Super-Admin')
                                 || Auth::user()->hasAnyPermission(['question.edit' , 'question.delete']))
                                 <td>
                                     <div class="btn-group" role="group" aria-label="{{ __("Action Buttons ") }}">
@@ -54,18 +59,18 @@
                                             <x-EditButton itemId="{{ $question->id }}" path="question.edit" />
                                         @endcan
                                         @can('question.delete')
-                                            <x-DeleteButton itemId="{{ $question->id }}" path="question.destroy" />                                    
+                                            <x-DeleteButton itemId="{{ $question->id }}" path="question.destroy" />
                                         @endcan
                                     </div>
                                 </td>
                                 @endif
                             </tr>
                         @empty
-                            
-                        @endforelse                        
+
+                        @endforelse
                     </tbody>
                 </table>
-                
+
                 <hr/>
                 <div class="text-center">
                     {!! $questions->links() !!}

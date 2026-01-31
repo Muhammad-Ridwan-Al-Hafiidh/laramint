@@ -17,20 +17,39 @@
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary">{{ $activity->title }}</h6>
 
-                <div class="dropdown no-arrow">
-                    <x-BackButton />
+                <div class="d-flex align-items-center" style="gap:8px;">
+                   
+                    <div class="dropdown no-arrow">
+                        <x-BackButton />
+                    </div>
                 </div>
             </div>
             <!-- Card Body -->
-            <div class="card-body">
-
-                @livewire('activity.result', [
+                        <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="card shadow-sm border-bottom-primary">
+                            <div class="card-body py-2 d-flex align-items-center justify-content-between">
+                                <div class="text-muted">{{ __("Score") }}</div>
+                                <div class="h5 m-0">{{ (int)($workout->score ?? 0) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>@livewire('activity.result', [
                 'activity' => $activity,
                 'participant' => $participant,
                 'workout' => $workout
                 ])
             </div>
 
+            <div class="card-footer text-center">
+                <form method="post" class="d-inline" action="{{ route('quizRestart', $workout->id) }}" onsubmit="return confirm('Restart this quiz? This will clear previous answers.')">
+                    @csrf
+                    <button class="btn btn-warning" id="restartQuiz">
+                        <i class="fa fa-redo"></i> {{ __("Restart") }}
+                    </button>
+                </form>
+            </div>
 
         </div>
     </div>
@@ -41,14 +60,4 @@
                 These items will be permanently close and cannot be recovered. Are you sure?</p>
         </div>
     </div>
-    @endsection
-
-    @section('js')
-    <script>
-        let mp3WorkerPathPHP = "{{ URL::to('js/record/src/mp3Worker.js') }}";
-    </script>
-    <script src="{{ URL::to('/js/quiz.js') }}"></script>
-    <script src="{{ URL::to('/js/record/src/recorder.js') }}"></script>
-    <script src="{{ URL::to('/js/record/src/mp3Worker.js') }}"></script>
-    <script src="{{ URL::to('/js/record/js/app.js') }}"></script>
     @endsection

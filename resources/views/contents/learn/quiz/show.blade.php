@@ -3,21 +3,30 @@
 
 @section("content")
 <div class="row">
-    
+
     <div class="col-12">
         <div class="card shadow mb-4 border-bottom-primary">
             <!-- Card Header - Dropdown -->
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-primary">{{ $activity->title }}</h6>
 
+
                 <div class="dropdown no-arrow">
                     <x-BackButton />
                 </div>
             </div>
             <!-- Card Body -->
-            <div class="card-body">
-
-                @livewire('activity.quiz', [
+                        <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="card shadow-sm border-bottom-primary">
+                            <div class="card-body py-2 d-flex align-items-center justify-content-between">
+                                <div class="text-muted">{{ __("Score") }}</div>
+                                <div class="h5 m-0">{{ (int)($workout->score ?? 0) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>@livewire('activity.quiz', [
                 'activity' => $activity,
                 'participant' => $participant,
                 'workout' => $workout
@@ -50,3 +59,4 @@
     <script src="{{ URL::to('/js/record/src/mp3Worker.js') }}"></script>
     <script src="{{ URL::to('/js/record/js/app.js') }}"></script>
     @endsection
+{{-- injected by copilot restart header button --}}

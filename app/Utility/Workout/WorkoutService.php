@@ -61,4 +61,43 @@ abstract class WorkoutService
 
         return null;
     }
+
+    /**
+     * Recompute workout score and completion flags from logs.
+     */
+    public static function recomputeScore(Workout $workout): int
+    {
+        $workoutQuiz = $workout->WorkOutQuiz;
+        if (!$workoutQuiz || $workoutQuiz->count() === 0) {
+            $workout->update([
+                'score' => 0,
+                'is_completed' => false,
+                'is_mentor' => false,
+                'date_get_score' => now(),
+            ]);
+            return 0;
+        }
+
+        $sumOfScore = 0;
+        $is_completed = true;
+        $is_mentor = false;
+        foreach ($workoutQuiz as $question) {
+            if ($is_mentor == false && $question->is_mentor) {
+                $is_completed = false;
+                $is_mentor = true;
+            }
+            $sumOfScore += (int)$question->score;
+        }
+
+        $score = (int)($sumOfScore / max(1, count($workoutQuiz)));
+
+        $workout->update([
+            'score' => $score,
+            'is_completed' => $is_completed,
+            'is_mentor' => $is_mentor,
+            'date_get_score' => now(),
+        ]);
+
+        return $score;
+    }
 }

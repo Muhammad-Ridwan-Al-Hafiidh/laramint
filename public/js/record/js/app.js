@@ -1,4 +1,4 @@
-$(document).ready(function () {
+﻿$(document).ready(function () {
     $(document).on("click", "#record:not(.disabled)", function () {
         Fr.voice.record($("#live").is(":checked"), function () {
             $(".recordButton").addClass("disabled");
@@ -9,80 +9,52 @@ $(document).ready(function () {
             makeWaveform();
         });
     });
-
-    // $(document).on("click", "#save:not(.disabled)", function () {
-
-    //     if ($(this).parent().data("type") === "mp3") {
-    //         Fr.voice.exportMP3(function (url) {
-    //             $("#audio").attr("src", url);
-    //             $('#fileRecorded').files= url;
-    //         }, "URL");
-    //     } else {
-    //         Fr.voice.export(function (url) {
-    //             $("#audio").attr("src", url);
-    //             $('#fileRecorded').files= url;
-
-    //         }, "URL");
-    //     }
-
-    // });
 });
 
 function saveButton(id) {
-    Fr.voice.export(upload, "blob");
+    Fr.voice.export(function (blob) {
+        upload(blob, id);
+    }, "blob");
     Fr.voice.stop();
 }
 
-function upload(blob) {
-    
+function upload(blob, id) {
     $("#audio").attr("src", URL.createObjectURL(blob));
 
-    
-    var formData = new FormData($('#question_20')[0]);
-    formData.append('answer_20', blob);
-    formData.append('_token', $('#csrf_20').val());
-    formData.append('workout_id',  $('#workout_id_20').val());
-    formData.append('question_id',  $('#question_id_20').val());
-   
+    var $form = $("#question-" + id);
+    var formData = new FormData($form[0]);
+    // Append recorded blob under answer-{id}
+    formData.append("answer-" + id, blob);
+
     $.ajax({
-        url: $("#question_20").attr("action"),
-        type: 'POST',
+        url: $form.attr("action"),
+        type: "POST",
         data: formData,
         contentType: false,
         processData: false,
-        success: function (url) {
-            console.log(url)
-        }
+        success: function (resp) {
+            // Auto-advance to next question in StepByStep style
+            if (typeof style !== "undefined" && style === "StepByStep") {
+                var $currentBtn = $("#btnQuestion-" + id);
+                var $nextBtn = $currentBtn.parent().next().find(".btnQuestion");
+                if ($nextBtn.length) {
+                    $nextBtn.trigger("click");
+                }
+            }
+        },
     });
 }
 
 (function (window) {
     window.Fr = window.Fr || {};
     Fr.voice = {
-        /**
-         * Path to mp3Worker.js
-         * Only needed if you're gonna use MP3 conversion
-         * You should also include libmp3lame.min.js
-         * You can get both files from https://github.com/subins2000/Francium-voice/blob/master/js/
-         */
         mp3WorkerPath: mp3WorkerPathPHP,
-
         stream: false,
         input: false,
-
         init_called: false,
-
-        /**
-         * @type function setTimeout() function will be stored here
-         */
         stopRecordingTimeout: false,
-
-        /**
-         * Initialize. Set up variables.
-         */
         init: function () {
             try {
-                // Fix up for prefixing
                 window.AudioContext =
                     window.AudioContext || window.webkitAudioContext;
                 navigator.getUserMedia =
@@ -100,10 +72,6 @@ function upload(blob) {
                 alert("Web Audio API is not supported in this browser");
             }
         },
-
-        /**
-         * Start recording audio
-         */
         record: function (output, finishCallback, recordingCallback) {
             var finishCallback = finishCallback || function () {};
             var recordingCallback = recordingCallback || function () {};
@@ -117,9 +85,6 @@ function upload(blob) {
             navigator.getUserMedia(
                 { audio: true },
                 function (stream) {
-                    /**
-                     * Live Output
-                     */
                     $that.input = $that.context.createMediaStreamSource(stream);
                     if (output === true) {
                         $that.input.connect($that.context.destination);
@@ -139,24 +104,12 @@ function upload(blob) {
                 }
             );
         },
-
-        /**
-         * Pause the recording
-         */
         pause: function () {
             this.recorder.stop();
         },
-
         resume: function () {
             this.recorder.record();
         },
-
-        /**
-         * Stop recording audio.
-         * This will reset the recorded audio and the
-         * recorded audio can't be played or exported after.
-         * @return {Fr.voice}
-         */
         stop: function () {
             this.recorder.stop();
             this.recorder.clear();
@@ -165,29 +118,16 @@ function upload(blob) {
             });
             return this;
         },
-
-        /**
-         * Export the recorded audio as WAV in different formats
-         * @param {[type]} [varname] [description]
-         */
         export: function (callback, type) {
             this.recorder.exportWAV(function (blob) {
                 Fr.voice.callExportCallback(blob, callback, type);
             });
         },
-
         exportMP3: function (callback, type) {
             this.recorder.exportMP3(function (blob) {
                 Fr.voice.callExportCallback(blob, callback, type);
             });
         },
-
-        /**
-         * Call the export callback with data it requires
-         * @param  {Blob}     blob     Exported blob
-         * @param  {string}   type     Type of data to export
-         * @param  {Function} callback Export callback
-         */
         callExportCallback: function (blob, callback, type) {
             if (typeof type === "undefined" || type == "blob") {
                 callback(blob);
@@ -203,15 +143,8 @@ function upload(blob) {
                 callback(url);
             }
         },
-
-        /**
-         * Pause the recording after a specific time
-         * @param  integer time Time in milliseconds
-         * @return void
-         */
         stopRecordingAfter: function (time, callback) {
             var callback = callback || function () {};
-
             clearTimeout(this.stopRecordingTimeout);
             this.stopRecordingTimeout = setTimeout(function () {
                 Fr.voice.pause();
@@ -232,46 +165,35 @@ function restore() {
 
 function makeWaveform() {
     var analyser = Fr.voice.recorder.analyser;
-
     var bufferLength = analyser.frequencyBinCount;
     var dataArray = new Uint8Array(bufferLength);
 
     $("#record").hide();
     $("#save").show();
 
-    /**
-     * The Waveform canvas
-     */
     var WIDTH = 500,
         HEIGHT = 200;
-
     var canvasCtx = $("#level")[0].getContext("2d");
     canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
 
     function draw() {
         var drawVisual = requestAnimationFrame(draw);
-
         analyser.getByteTimeDomainData(dataArray);
-
         canvasCtx.fillStyle = "rgb(200, 200, 200)";
         canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
         canvasCtx.lineWidth = 2;
         canvasCtx.strokeStyle = "rgb(0, 0, 0)";
-
         canvasCtx.beginPath();
-
         var sliceWidth = (WIDTH * 1.0) / bufferLength;
         var x = 0;
         for (var i = 0; i < bufferLength; i++) {
             var v = dataArray[i] / 128.0;
             var y = (v * HEIGHT) / 2;
-
             if (i === 0) {
                 canvasCtx.moveTo(x, y);
             } else {
                 canvasCtx.lineTo(x, y);
             }
-
             x += sliceWidth;
         }
         canvasCtx.lineTo(WIDTH, HEIGHT / 2);

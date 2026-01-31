@@ -37,11 +37,7 @@
                     <span class="icon text-white-50">
                         <i class="fas fa-plus"></i>
                     </span>
-            </button>
-            
-            </form>
-
-        </div>
+            </button></div>
         <div class="card-footer">
             <button wire:click.prevent="store" class="btn btn-primary btn-icon-split">
                         <span class="icon text-white-50">
@@ -50,10 +46,5 @@
                         <span class="text">Save</span>
             </button>
         </div>
-    </div>
-    <form>
-    
-
-
-    @include('livewire.factory.question.multiple-question.review')
+    </div>@include('livewire.factory.question.multiple-question.review')
 </div>

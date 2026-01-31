@@ -1,4 +1,4 @@
-$(document).ready(function () {
+﻿$(document).ready(function () {
     $("#btnQuestions .btnQuestion").removeClass("process-step-active");
     if (style == "StepByStep") {
         StepByStep();
@@ -54,23 +54,57 @@ function showQuestion(question) {
 
 function scrollToAnchor(question) {
     var aTag = $("#question-" + question);
-    $("html,body").animate({ scrollTop: aTag.offset().top }, "slow");
+    var headerOffset = 80;
+    $("html,body").animate({ scrollTop: aTag.offset().top - headerOffset }, "slow");
 }
 
 function saveAndClose() {
-
-    $.when(
-        $(".workout_questions").each(function () {
-            var data = $(this).serialize();
-            var url = $(this).attr("action");
-    
-            $.post(url, data, function (data) {});
-        })
-       ).then(function () {
-            window.location.reload();
-       });
-
-    
-
-    
+    var requests = [];
+    $(".workout_questions").each(function () {
+        var $form = $(this);
+        var url = $form.attr("action");
+        var isMultipart = (($form.attr("enctype") || "").toLowerCase() === "multipart/form-data") || $form.find('input[type="file"]').length > 0;
+        if (isMultipart) {
+            var fd = new FormData($form[0]);
+            requests.push($.ajax({ url: url, type: 'POST', data: fd, contentType: false, processData: false }));
+        } else {
+            requests.push($.post(url, $form.serialize()));
+        }
+    });
+    $.when.apply($, requests).then(function(){ window.location.reload(); });
 }
+
+// Intercept form submission to prevent navigating to JSON
+$(document).on('submit', '.workout_questions', function(e) {
+  e.preventDefault();
+  var $form = $(this);
+  var url = $form.attr('action');
+  var questionId = $form.find('input[name="question_id"]').val();
+  var isMultipart = (($form.attr('enctype') || '').toLowerCase() === 'multipart/form-data') || $form.find('input[type="file"]').length > 0;
+  if (isMultipart) {
+    var formData = new FormData($form[0]);
+    $.ajax({
+      url: url,
+      type: 'POST',
+      data: formData,
+      contentType: false,
+      processData: false,
+      success: function(resp){
+        if (typeof style !== 'undefined' && style === 'StepByStep') {
+          var $currentBtn = $('#btnQuestion-' + questionId);
+          var $nextBtn = $currentBtn.parent().next().find('.btnQuestion');
+          if ($nextBtn.length) { $nextBtn.trigger('click'); }
+        }
+      }
+    });
+  } else {
+    var data = $form.serialize();
+    $.post(url, data, function(resp){
+      if (typeof style !== 'undefined' && style === 'StepByStep') {
+        var $currentBtn = $('#btnQuestion-' + questionId);
+        var $nextBtn = $currentBtn.parent().next().find('.btnQuestion');
+        if ($nextBtn.length) { $nextBtn.trigger('click'); }
+      }
+    });
+  }
+});

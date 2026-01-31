@@ -71,9 +71,10 @@ Route::prefix('learn')->middleware(['verified'])->group(function () {
 
     // doing workout || excercise || quiz
     Route::get('/completeAndNext/{workout}', [WorkoutController::class, 'completedAndNext'])->name('completedAndNext');
+
+    // restart workout (available to all verified users)
+    Route::post('/quiz/restart/{workout}', [WorkoutController::class, 'restart'])->name('quizRestart');
 });
-
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes for mentors and super-visor access
